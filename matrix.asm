@@ -1,6 +1,6 @@
 ####################################################################
-# Disciplina: Arquitetura e Organização de Computadores
-# Atividade: Avaliação 02 - Programação em Linguagem de Montagem
+# Disciplina: Arquitetura e Organizaï¿½ï¿½o de Computadores
+# Atividade: Avaliaï¿½ï¿½o 02 - Programaï¿½ï¿½o em Linguagem de Montagem
 # Programa 01
 # Grupo: - Douglas Martins
 # - Henrique Backes
@@ -10,11 +10,11 @@
 #---------------------------------------------------- SETTING WHAT THE PROGRAM NEED -------------------------------------------------#
 
 	.data
-Matrix_A: 	          .word 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 # Declaração da Matrix A (max matrix_A[4][4])
-Matrix_B: 	          .word 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 # Declaração da Matrix B (max matrix_B[4][4])
-Matrix_C: 	          .word 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 # Declaração da Matrix C (max matrix_C[4][4])
-MsgEnterSizeColumn:       .asciiz "\nEntre com o tamanho da coluna (máx. = 4): "
-MsgEnterSizeRow:       	  .asciiz "\nEntre com o tamanho da linha (máx. = 4): "
+Matrix_A: 	          .word 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 # Declaraï¿½ï¿½o da Matrix A (max matrix_A[4][4])
+Matrix_B: 	          .word 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 # Declaraï¿½ï¿½o da Matrix B (max matrix_B[4][4])
+Matrix_C: 	          .word 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 # Declaraï¿½ï¿½o da Matrix C (max matrix_C[4][4])
+MsgEnterSizeColumn:       .asciiz "\nEntre com o tamanho da coluna (mï¿½x. = 4): "
+MsgEnterSizeRow:       	  .asciiz "\nEntre com o tamanho da linha (mï¿½x. = 4): "
 MsgInputValuesBeginA:     .asciiz "\nEntre com o elemento A"
 MsgInputValuesBeginB:     .asciiz "\nEntre com o elemento B"
 MsgInputValuesBeginC:     .asciiz "\nC = "
@@ -23,8 +23,8 @@ MsgInputValuesMiddleTwo:  .asciiz "]"
 MsgInputValuesFinal:      .asciiz " = "
 MsgInputSpace:		  .asciiz " "
 MsgInputJumpLine:	  .asciiz "\n    "
-MsgWrongValue:      	  .asciiz "\nValor inválido"
-MsgWrongMatrixToMult:     .asciiz "\nValor inválido! Coluna da matriz A tem que ser igual a Linha de matriz B" 
+MsgWrongValue:      	  .asciiz "\nValor invï¿½lido"
+MsgWrongMatrixToMult:     .asciiz "\nValor invï¿½lido! Coluna da matriz A tem que ser igual a Linha de matriz B" 
 #---------------------------------------------------- SETTING WHAT THE PROGRAM NEED ---------------------------------------------------------#
 
 
@@ -291,51 +291,50 @@ j	Loop_I_Read_B			# goto Loop_Read_B
 mult_matrix:
 	addi $sp, $sp, -4
 	sw   $ra, 0($sp)
-Loop_I_Read: 
+Loop_I_Read:
 	# CONDITION (I)
 	slt  $t0, $t1, $s4                 # if (i < linha_a) $t0 = 1 else $t0 = 0
-        beq  $t0, $zero, jump_main  # if ($t0 == 0) goto Return_Procedure
-
-Loop_J_Read:
+        beq  $t0, $zero, jump_main  	   # if ($t0 == 0) goto jump_main
+        
+        # ADDING INDEX LOOP ++
+        addi $t1, $t1, 1		   # i++
+        addi $t2, $zero, 0          	   # j = 0
+        
+Loop_J_Read: 
 	# CONDITION (J)
-	slt  $t2, $t3, $s5                 # if (j < coluna_b) $t0 = 1 else $t0 = 0
-        beq  $t2, $zero, Jump_Row          # if ($t0 == 0) goto Jump_Row
+	slt  $t0, $t2, $s3                 # if (j < coluna_B) $t0 = 1 else $t0 = 0
+        beq  $t0, $zero, Loop_I_Read  	   # if ($t0 == 0) goto Loop_I_Read
 
-	# DESLOCAMENTO
-        add  $t4, $t3, $t3         	# $t4 = 2.j
-      	add  $t4, $t4, $t4         	# $t4 = 4.j
-      	add  $t6, $t4, $s0         	# $t6 = end.base + 4.j (deslocamento) = end. de A[i][j]
-      	#add  $t8, $t4, $s1		# $t8 = end.base + 4.j (deslocamento) = end. de B[i][j]
-      	add  $a0, $t3, $s5		# $a0 = j + coluna_B
-      	mul  $a0, $a0, 4		# $a0 = $a0 * 4
-      	add  $t8, $a0, $s1		# $t8 = $a0 + end. base + deslocamento
-      	add  $t7, $t4, $s2		# $t7 = end.base + 4.j (deslocamento) = end. de C[i][j]
-	
-	# LOAD MATRIX VALUES
-	lw   $a0, 0($t6)            	# $a0 = A[i][j]
-	lw   $a1, 0($t8)		# $a1 = B[i][j]
-	
-	# CALL METHOD TO MULTIPLY ELEMENTS
-	jal mult_escalar
-	add $t9, $t9, $v0      	
+Loop_K_Read:
+	# CONDITION (K)
+	slt  $t0, $t3, $s5                 # if (K < coluna_A) $t0 = 1 else $t0 = 0
+        beq  $t0, $zero, Jump_Row  	   # if ($t0 == 0) goto Jump_Row
+        
+        # DESLOCAMENTO
+        add  $t5, $t4, $t4         	# $t5 = 2.k
+      	add  $t5, $t5, $t5         	# $t5 = 4.k
+      	add  $t6, $t5, $s0         	# $t6 = end.base + 4.k (deslocamento) = end. de A[j][k]
       	
-      	# ADDING INDEX LOOP ++
-        addi $t3, $t3, 1          	# j++
-        addi $t5, $t5, 1		# aux++
-
-j	Loop_J_Read			# goto Loop_J_Read
+      	# LOAD MATRIX VALUES
+	lw   $a0, 0($t6)            	# $a0 = A[j][k]
+        
+        # ADDING INDEX LOOP ++
+        addi $t3, $t3, 1          	# k++
+        addi $t4, $t4, 1		# aux++
+        
+j	Loop_K_Read			# goto Loop_K_Read
 
 Jump_Row:
-	# STORE $t4 IN Matrix_[i][j]
-      	sw   $t9, 0($t7)            	# salva $t9 no array Matrix_C[i][j]
-
-	# RESET J
+	# RESET K
 	addi $t3, $zero, 0		# $t3 = 0
-
-     	# ADDING INDEX LOOP ++
-        addi $t1, $t1, 1          	# i++
+	
+    	# ADDING INDEX LOOP ++
+        addi $t2, $t2, 1          	# j++
         
-j	Loop_I_Read			# goto Loop_Read
+j	Loop_J_Read			# goto Loop_J_Read
+
+	
+j	Loop_I_Read			# goto Loop_I_Read
 
 jump_main:
 	lw   $ra, 0($sp)
@@ -347,7 +346,7 @@ jr	$ra
 
 #------------------------------------------------------------- MULT ESCALAR -------------------------------------------------------------------#	
 mult_escalar: # $a0 = matrix_a[i][j] $a1 = matrix_b[i][j]
-	addi $sp, $sp, -8
+	addi $sp, $sp, -8		
 	sw   $t1, 4($sp)
 	sw   $t0, 0($sp)
 while:
@@ -362,13 +361,13 @@ end_while:
 	lw  $t0, 0($sp)
 	lw  $t1, 4($sp)
 	addi $sp, $sp, 8
-jr	$ra
+jr	$ra				   # retorna o procedimento
 #------------------------------------------------------------- MULT ESCALAR -------------------------------------------------------------------#	
 
 
 #------------------------------------------------------------- RETURN PROCEDURE -------------------------------------------------------------------#
 Return_Procedure:
-jr	$ra
+jr	$ra				   # retorna o procedimento
 #------------------------------------------------------------- RETURN PROCEDURE -------------------------------------------------------------------#
 
 
@@ -439,19 +438,28 @@ declare_matrix:
 	la   $s2, Matrix_C		# Carrega o Matrix_C[] no registrador $s2
 	
 	# METHODS CALLED (SET MATRIX A VALUES) $a1 = row $a2 = column $a3 = base address matrix
-	addi $t1, $zero, 0
+	addi $t1, $zero, 0		# $t1 = 0
+	addi $t2, $zero, 0		# $t3 = 0
+	addi $t3, $zero, 0		# $t3 = 0
+	addi $t4, $zero, 0		# $t4 = 0
+	addi $t5, $zero, 0		# $t5 = 0
 	addi $a1, $s4, 0		# $a1 = $s4(Linha_A) + 0
 	addi $a2, $s3, 0		# $a1 = $s3(Coluna_A) + 0
 	addi $a3, $s0, 0		# $a1 = $s0(MatrizA end. base) + 0
 	jal  Loop_I_Read_A		# Executa procedimento para entrar com os valores dos elementos da Matriz_A
 	
 	# METHODS CALLED (SET MATRIX B VALUES) $a1 = row $a2 = column $a3 = base address matrix
-	addi $t1, $zero, 0
+	addi $t1, $zero, 0		# $t1 = 0
+	addi $t2, $zero, 0		# $t3 = 0
+	addi $t3, $zero, 0		# $t3 = 0
+	addi $t4, $zero, 0		# $t4 = 0
+	addi $t5, $zero, 0		# $t5 = 0
 	addi $a1, $s6, 0		# $a1 = $s6(Linha_B) + 0
 	addi $a2, $s5, 0		# $a1 = $s5(Coluna_B) + 0
 	addi $a3, $s1, 0		# $a1 = $s1(MatrizB end. base) + 0
 	jal  Loop_I_Read_B		# Executa procedimento para entrar com os valores dos elementos da Matriz_B
 	
+	# RESETTING REGISTERS
 	addi $t1, $zero, 0
 	addi $t2, $zero, 0
 	addi $t4, $zero, 0
@@ -460,10 +468,12 @@ declare_matrix:
 	addi $a1, $zero, 0
 	addi $a2, $zero, 0
 	addi $a3, $zero, 0
+	addi $v0, $zero, 0
 	
 	# METHODS CALLED (MULT MATRIX)
 	jal  mult_matrix
 	
+	# RESETTING REGISTERS
 	addi $t1, $zero, 0
 	addi $t2, $zero, 0
 	addi $t4, $zero, 0

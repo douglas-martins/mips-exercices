@@ -95,19 +95,19 @@ check_matrix:
 while_check:
 	# METHODS CALLED (SET COLUMN A VALUE)
 	jal  Loop_Matrix_Column_Size	# Executa prodedimento para pegar um tamanho para coluna de uma matriz
-	add  $s3, $t1, 0 		# Coluna_A = $s3 e $s3 = $t1 + 0
+	add  $s3, $t1, 0 		# Linha_A = $s3 e $s3 = $t1 + 0
 	
 	# METHODS CALLED (SET ROW A VALUE)
 	jal  Loop_Matrix_Row_Size	# Executa prodedimento para pegar um tamanho linha de uma matriz
-	addi $s4, $t1, 0		# Linha_A = $s4 e $s4 = $t1 + 0
+	addi $s4, $t1, 0		# Coluna_A = $s4 e $s4 = $t1 + 0
 	
 	# METHODS CALLED (SET COLUMN B VALUE)
 	jal  Loop_Matrix_Column_Size	# Executa prodedimento para pegar um tamanho para coluna de uma matriz
-	addi $s5, $t1, 0		# Coluna_B = $s5 e $s5 = $t1 + 0
+	addi $s5, $t1, 0		# Linha_B = $s5 e $s5 = $t1 + 0
 	
 	# METHODS CALLED (SET ROW B VALUE)
 	jal  Loop_Matrix_Row_Size	# Executa prodedimento para pegar um tamanho para linha de uma matriz
-	addi $s6, $t1, 0		# Linha_B = $s6 e $s6 = $t1 + 0
+	addi $s6, $t1, 0		# Coluna_B = $s6 e $s6 = $t1 + 0
 	
 	# CONDITION (to stay or exit the check_matrix)
 	bne  $s4, $s5, incorrect_Matrix_Mult 	# if (row_a != column_B) goto incorrect_matrix_mult
@@ -126,12 +126,12 @@ j	while_check
 #------------------------------------------------------------- LOOP_READ_A -----------------------------------------------------------------#
 Loop_I_Read_A: # $a1 = row $a2 = column $a3 = base address matrix
 	# CONDITION (I)
-	slt  $t0, $t1, $a2                 # if (i < size) $t0 = 1 else $t0 = 0
+	slt  $t0, $t1, $a1                 # if (i < size) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Return_Procedure  # if ($t0 == 0) goto Return_Procedure
 
 Loop_J_Read_A:
 	# CONDITION (J)
-	slt  $t0, $t3, $a1              # if (j < size) $t0 = 1 else $t0 = 0
+	slt  $t0, $t3, $a2              # if (j < size) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Jump_Row_A       # if ($t0 == 0) goto Jump_Row_A
 
 	# DESLOCAMENTO
@@ -208,12 +208,12 @@ j	Loop_I_Read_A			# goto Loop_Read_A
 #------------------------------------------------------------- LOOP_READ_B ------------------------------------------------------------#
 Loop_I_Read_B: # $a1 = row $a2 = column $a3 = base address matrix
 	# CONDITION (I)
-	slt  $t0, $t1, $a2                 # if (i < size) $t0 = 1 else $t0 = 0
+	slt  $t0, $t1, $a1                 # if (i < size) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Return_Procedure  # if ($t0 == 0) goto Return_Procedure
 
 Loop_J_Read_B:
 	# CONDITION (J)
-	slt  $t0, $t3, $a1              # if (j < size) $t0 = 1 else $t0 = 0
+	slt  $t0, $t3, $a2              # if (j < size) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Jump_Row_B     # if ($t0 == 0) goto Jump_Row_B
 
 	# DESLOCAMENTO
@@ -293,48 +293,80 @@ mult_matrix:
 	sw   $ra, 0($sp)
 Loop_I_Read:
 	# CONDITION (I)
-	slt  $t0, $t1, $s4                 # if (i < linha_a) $t0 = 1 else $t0 = 0
+	slt  $t0, $t1, $s3                 # if (i < linha_a) $t0 = 1 else $t0 = 0
+	#beq  $t0, 1, Reset_Row
         beq  $t0, $zero, jump_main  	   # if ($t0 == 0) goto jump_main
-        
-        # ADDING INDEX LOOP ++
-        addi $t1, $t1, 1		   # i++
-        addi $t2, $zero, 0          	   # j = 0
         
 Loop_J_Read: 
 	# CONDITION (J)
-	slt  $t0, $t2, $s3                 # if (j < coluna_B) $t0 = 1 else $t0 = 0
-        beq  $t0, $zero, Loop_I_Read  	   # if ($t0 == 0) goto Loop_I_Read
+	slt  $t0, $t2, $s6                 # if (j < coluna_B) $t0 = 1 else $t0 = 0
+        beq  $t0, $zero, Reset_Row  	   # if ($t0 == 0) goto Loop_I_Read
 
 Loop_K_Read:
 	# CONDITION (K)
-	slt  $t0, $t3, $s5                 # if (K < coluna_A) $t0 = 1 else $t0 = 0
+	slt  $t0, $t3, $s4                 # if (k < coluna_A) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Jump_Row  	   # if ($t0 == 0) goto Jump_Row
-        
-        # DESLOCAMENTO
-        add  $t5, $t4, $t4         	# $t5 = 2.k
-      	add  $t5, $t5, $t5         	# $t5 = 4.k
-      	add  $t6, $t5, $s0         	# $t6 = end.base + 4.k (deslocamento) = end. de A[j][k]
       	
-      	# LOAD MATRIX VALUES
-	lw   $a0, 0($t6)            	# $a0 = A[j][k]
+      	# DESLOCAMENTO A
+      	mul  $t5, $t1, $s4           	# $t5 = $t1 (i) * $s4 (coluna_A)
+	mul  $t5, $t5, 4 	        # $t5 = $t5 * 4		
+	mul  $t9, $t3, 4  	        # $t9 = $t3 (k) * 4
+	add  $t5, $t5, $t9 	    	# $t5 = $t5 + $t9
+	add  $t5, $t5, $s0		# $t5 = $t5 + end. base Matriz_A ($s0)
+	lw   $a0, 0($t5)         	# Adiciona o numero que esta na posicao $t5 da matriz A em $t5.         
+ 
+	addi $t9, $zero, 0		# Zera $t9 para um novo deslocamento.
+  	      
+  	# DESLOCAMENTO B    
+	mul  $t6, $t3, $s3	        # $t6 = $t3 (k) * $s3 (linha_A)
+	mul  $t6, $t6, 4	        # $t6 = $t6 * 4
+	mul  $t9, $t2, 4	        # $t9 = $t2 (j) * 4
+	add  $t6, $t6, $t9 	    	# $t6 = $t6 + $t9
+	add  $t6, $t6, $s1		# $t6 = $t6 + end. base Matriz_B ($s1)
+	lw   $a1, 0($t6)	    	# Adiciona o numero que esta na posicao $t6 da matriz B em $t6.	
+      	
+      	# CALL MULT_SCALAR
+      	jal mult_escalar
+      	add $t7, $t7, $v0
         
         # ADDING INDEX LOOP ++
         addi $t3, $t3, 1          	# k++
-        addi $t4, $t4, 1		# aux++
+        #addi $t4, $t4, 1		# aux++
         
 j	Loop_K_Read			# goto Loop_K_Read
 
 Jump_Row:
+	# DESLOCAMENTO C
+	mul  $t4, $t1, $s6   		# $t4 = $t1 (i) * $s6 (coluna_B)
+	mul  $t4, $t4, 4     		# $t4 = $t4 * 4
+	mul  $t9, $t2, 4      		# $t9 = $t2 (j) * 4
+	add  $t4, $t4, $t9   		# #t4 = $t4 + $t9
+	add  $t4, $t4, $s2		# $t4 = $t4 + end. base Matriz_C ($s2)
+	sw   $t7, 0($t4)  		# Adiciona o registrador de soma na matriz C em $t4.
+	
+	addi $t7, $zero, 0
+	addi $v0, $zero, 0
+
 	# RESET K
-	addi $t3, $zero, 0		# $t3 = 0
+	addi $t3, $zero, 0		# $t3 = 0 (k)
 	
     	# ADDING INDEX LOOP ++
         addi $t2, $t2, 1          	# j++
+        
+        addi $t9, $zero, 0		# zera $t9 para um novo deslocamento.
         
 j	Loop_J_Read			# goto Loop_J_Read
 
 	
 j	Loop_I_Read			# goto Loop_I_Read
+
+Reset_Row:
+
+	# ADDING INDEX LOOP ++
+        addi $t1, $t1, 1		   # i++
+        addi $t2, $zero, 0          	   # j = 0
+        
+j	Loop_I_Read
 
 jump_main:
 	lw   $ra, 0($sp)
@@ -345,23 +377,26 @@ jr	$ra
 
 
 #------------------------------------------------------------- MULT ESCALAR -------------------------------------------------------------------#	
-mult_escalar: # $a0 = matrix_a[i][j] $a1 = matrix_b[i][j]
-	addi $sp, $sp, -8		
-	sw   $t1, 4($sp)
-	sw   $t0, 0($sp)
-while:
-	# CONDITION
-	slt  $t0, $t1, $a0                 # if (i < matrix[i][j]) $t0 = 1 else $t0 = 0
-        beq  $t0, $zero, end_while 	   # if ($t0 == 0) goto end_while
-        
-        add  $v0, $v0, $a1		   # $vo = $va + $a1
-        addi $t1, $t1, 1		   # i++
-j	while				   # goto while
-end_while:
-	lw  $t0, 0($sp)
-	lw  $t1, 4($sp)
-	addi $sp, $sp, 8
-jr	$ra				   # retorna o procedimento
+mult_escalar:
+	li $a3, 0		# a3 recebe 0.
+	li $v0, 0		# v0 recebe 0.
+	blt $a0, 0, negative	# se a0 < 0 pula pra negative.
+	j positive		# pula pra positive.
+	
+negative:			# realiza a multiplicação por soma sucessiva se o 1o número for negativo.
+	beq $a3, $a0, result	# se t2 == t0 pula pra result.
+	sub  $v0, $v0, $a1	# v0 recebe v0 - t1 (soma os números negativamente).
+	addi $a3, $a3, -1	# t2 --.
+	j negative		# pula pro inicio do loop.
+	
+positive: 			# realiza a multiplicação por soma sucessiva se o 1o número for positivo.
+	beq $a3, $a0, result	# se t2 == t0 pula pra result.
+	add $v0, $v0, $a1	# v0 recebe v0 + t1 ( soma os números ).
+	addi $a3, $a3, 1	# t2 ++.
+	j positive		# pula pro início do loop.
+
+result:				# finaliza o procedimento.
+	jr $ra			# retorna para o endereço seguinte a onde foi chamado o procedimento.
 #------------------------------------------------------------- MULT ESCALAR -------------------------------------------------------------------#	
 
 
@@ -377,14 +412,14 @@ Print_Matrix_C:
       	li   $v0, 4                	# chamada 4
       	la   $a0, MsgInputValuesBeginC   # MsgInputValuesBeginC
       	syscall
-Loop_Print_C_I: # $a1 = row $a2 = column $a3 = base address matrix
+Loop_Print_C_I: # $a1 = row_A $a2 = column_B $a3 = base address matrix
 	# CONDITION (I)
-	slt  $t0, $t1, $a2                 # if (i < Coluna A) $t0 = 1 else $t0 = 0
+	slt  $t0, $t1, $a1                 # if (i < Linha A) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Return_Procedure  # if ($t0 == 0) goto Return_Procedure
 
 Loop_Print_C_J:
 	# CONDITION (J)
-	slt  $t0, $t3, $a1              # if (j < Linha B) $t0 = 1 else $t0 = 0
+	slt  $t0, $t3, $a2              # if (j < Coluna B) $t0 = 1 else $t0 = 0
         beq  $t0, $zero, Jump_Row_C     # if ($t0 == 0) goto Jump_Row_C
 
 	# DESLOCAMENTO
@@ -443,8 +478,8 @@ declare_matrix:
 	addi $t3, $zero, 0		# $t3 = 0
 	addi $t4, $zero, 0		# $t4 = 0
 	addi $t5, $zero, 0		# $t5 = 0
-	addi $a1, $s4, 0		# $a1 = $s4(Linha_A) + 0
-	addi $a2, $s3, 0		# $a1 = $s3(Coluna_A) + 0
+	addi $a1, $s3, 0		# $a1 = $s3(Linha_A) + 0
+	addi $a2, $s4, 0		# $a1 = $s4(Coluna_A) + 0
 	addi $a3, $s0, 0		# $a1 = $s0(MatrizA end. base) + 0
 	jal  Loop_I_Read_A		# Executa procedimento para entrar com os valores dos elementos da Matriz_A
 	
@@ -454,8 +489,8 @@ declare_matrix:
 	addi $t3, $zero, 0		# $t3 = 0
 	addi $t4, $zero, 0		# $t4 = 0
 	addi $t5, $zero, 0		# $t5 = 0
-	addi $a1, $s6, 0		# $a1 = $s6(Linha_B) + 0
-	addi $a2, $s5, 0		# $a1 = $s5(Coluna_B) + 0
+	addi $a1, $s5, 0		# $a1 = $s5(Linha_B) + 0
+	addi $a2, $s6, 0		# $a1 = $s6(Coluna_B) + 0
 	addi $a3, $s1, 0		# $a1 = $s1(MatrizB end. base) + 0
 	jal  Loop_I_Read_B		# Executa procedimento para entrar com os valores dos elementos da Matriz_B
 	
